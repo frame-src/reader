@@ -35,16 +35,19 @@ int check_for_word(char *string, t_args *args)
 		else if (single_word_strchr(args->single_word, &string[i]) > 0)
 			return (i);
 		else if (ft_strchr(args->split_char, string[i]) != NULL)
-			i = found_split_char( i, &word);
+		{
+			found_split_char( i, &word);
+			return (i);
+		}
 		else
 			i = found_word(&word, i, &word_num);
 		if (word == false)
-			break;
+			return (i);
 	}
 	return (i);
 }
 
-static char	**fill_the_string(char **split, char *string, t_args *args)
+static char	**fill_the_string(char **split, char *string, t_args *args, int size)
 {
 	int	i;
 	int	j;
@@ -52,22 +55,21 @@ static char	**fill_the_string(char **split, char *string, t_args *args)
 
 	i = 0;
 	j = 0;
-	while(split[i])
+	while(i < size)
 	{
-		if(single_word_strchr(args->single_word, &string[j]) > 0)
-		{
-			n = (single_word_strchr(args->single_word, &string[j]));
-			split[i] = create_the_word(&string[i], n);
-			printf("%s", split[i]);
-			j = j + n;
-		}
 		while(string[j])
 		{
-			if(check_for_word(&string[j], args) > 0)
+			if (check_for_word(&string[j], args) > 0)
 			{
 				n = check_for_word(&string[j], args);
-				split[i] = create_the_word(&string[i], n);
-				printf("%s", split[i]);
+				split[i] = create_the_word(&string[j], n);
+				j = j + n;
+				break;
+			}
+			if (single_word_strchr(args->single_word, &string[j]) > 0)
+			{
+				n = (single_word_strchr(args->single_word, &string[j]));
+				split[i] = create_the_word(&string[j], n);
 				j = j + n;
 				break;
 			}
@@ -79,27 +81,11 @@ static char	**fill_the_string(char **split, char *string, t_args *args)
 	return (split);
 }
 
-// static void print_args(char *string, t_args *s)
-// {
-// 	int i;
-
-// 	i = 0;
-// 	printf("%s \n", s->split_char);
-// 	while(s->single_word[i])
-// 	{
-// 		printf("%s  ", s->single_word[i]);
-// 		i++;
-// 	}
-// 	printf("\n %s \n", s->ignore);
-// 	printf("%s \n", s->ign_char_inside);
-// 	printf("%s SBEM\n", string);
-// 	fflush(stdout);
-// }
-
 static char	**create_the_string(int size)
 {
 	char **string;
 	string = malloc((sizeof(char *) * size) + 1);
+	printf("SIZE = %d",size);
 	if(string == NULL)
 		return (NULL);
 	string[size] = NULL;
@@ -107,16 +93,27 @@ static char	**create_the_string(int size)
 	return (string);
 }
 
+void print_reader(char **string)
+{
+	int i;
+
+	i = 0;
+	while (string[i])
+	{
+		printf("\n token %d: \t %s", i + 1, string[i]);
+		i++;
+	}
+}
+
 char	**ft_reader(char *string, t_args *args)
 {
 
 	char	**split_string = NULL;
-	//print_args(string, args);
 	split_string = create_the_string(word_count(string, args));
 	if(split_string == NULL)
 		return (NULL);
-	split_string = fill_the_string(split_string, string, args);
-	//printf("%d", word_count(string, args));
+	split_string = fill_the_string(split_string, string, args, word_count(string, args));
+	print_reader(split_string);
 	return(split_string);
 }
 
@@ -127,8 +124,7 @@ int main ()
 	args.single_word = (char *[]){"||", "|", "&&", "<<", ">>", "<", ">", NULL};
 	args.ignore = (char *)"\\";
 	args.ign_char_inside = (char *)"\"'";
-	//char *string= (char *)" echo  \"asdfds\\,af\" ";
-	char *string= (char *)"ls|ls|ls|ls|ls>smth";
+	char *string= (char *)"ls|ab|cd|es|gh>smth        more shit \" ||\" || bla bla && << < < >> >";
 	char **j = ft_reader(string, &args);
 	j = NULL;
 
